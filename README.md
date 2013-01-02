@@ -30,9 +30,9 @@ To instantiate an Exoatom, just make sure you have a redis server running and go
 
 ```clojure
 (ns hello-world
-  (:require [exoref.atom :as exo]))
+  (:use [exoref.atom :only [exoatom swap!! reset!! compare-and-set!!]]))
 
-(def eatom (exo/exoatom "some:redis:key" {:a 1 :b "hey"}))
+(def eatom (exoatom "some:redis:key" {:a 1 :b "hey"}))
 ```
 
 A Redis key has to be provided, in order to allow other components of the distributed system (or different workers running the same code on different machines) to access the Exoatom value.
@@ -41,12 +41,12 @@ To connect to a remote Redis server, provide a connection spec map (as in [Carmi
 ```clojure
 (def conn-spec {host "redis://redishost.com" port 6379 password "changeme" timeout 0 db 0}
 
-(def eatom (exo/exoatom "some:redis:key" {:a 1 :b "hey"} :conn-spec conn-spec))
+(def eatom (exoatom "some:redis:key" {:a 1 :b "hey"} :conn-spec conn-spec))
 ```
 
 Meta and validators are supported as in standard Clojure Atoms:
 ```clojure
-(def eatom (exo/exoatom "some:redis:key" {:a 1 :b "hey"} :meta {:foo "bar"} :validator #(odd? (:a %)))
+(def eatom (exoatom "some:redis:key" {:a 1 :b "hey"} :meta {:foo "bar"} :validator #(odd? (:a %)))
 
 (reset-meta! eatom {:foo "biz"})
 
