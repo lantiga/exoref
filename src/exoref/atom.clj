@@ -22,7 +22,7 @@
        (var-set ret# (do ~@body)))
      (var-get ret#)))
 
-(defprotocol IExoAtom
+(defprotocol IExoatom
   (compareAndSet [this o n])
   (swap [this f args])
   (reset [this v])
@@ -49,15 +49,15 @@
 
 (defn ^:private make-proxy
   "Creates an instance of a proxy class to clojure.lang.ARef implementing
-   the IExoAtom protocol.
+   the IExoatom protocol.
    Takes in input a Redis key, Carmine connection pool and connection spec
    objects and a Carmine listener record.
-   The resulting instance is an exoatom, a complete implementation of a Clojure
+   The resulting instance is an Exoatom, a complete implementation of a Clojure
    atom based on Redis. Meta, validator and watches are defined on a per-process
-   (i.e. are not serialized to Redis and shared by all processes using the exoatom)."
+   (i.e. are not serialized to Redis and shared by all processes using the Exoatom)."
   [key conn-pool conn-spec listener]
   
-  (proxy [clojure.lang.ARef exoref.atom.IExoAtom] []
+  (proxy [clojure.lang.ARef exoref.atom.IExoatom] []
     
     (deref []
       "Returns the value stored at key on the Redis server."
@@ -142,7 +142,7 @@
    connection spec."
   [key val conn-pool conn-spec]
   (let [listener (car/with-new-pubsub-listener conn-spec {})
-        ^exoref.atom.IExoAtom a (make-proxy key conn-pool conn-spec listener)]
+        ^exoref.atom.IExoatom a (make-proxy key conn-pool conn-spec listener)]
     (.reset a val)
     (swap! (:state listener) assoc key 
            (fn [msg]
@@ -152,7 +152,7 @@
     a))
 
 (defn exoatom
-  "Create and returns an instance of ExoAtom with a Redis key of key, 
+  "Create and returns an instance of Exoatom with a Redis key of key, 
    an initial value of val and zero or more options (in any order):
    :conn-pool carmine-conn-pool
    :conn-spec carmine-conn-spec
@@ -170,7 +170,7 @@
   "Atomically sets the value of exoatom to newval if and only if the
    current value of the exoatom is identical to oldval. Returns true if
    set happened, else false"
-  [^exoref.atom.IExoAtom a oldval newval]
+  [^exoref.atom.IExoatom a oldval newval]
   (.compareAndSet a oldval newval))
 
 (defn swap!!
@@ -178,18 +178,18 @@
    (apply f current-value-of-atom args). Note that f may be called
    multiple times, and thus should be free of side effects.  Returns
    the value that was swapped in."
-  [^exoref.atom.IExoAtom a f & args]
+  [^exoref.atom.IExoatom a f & args]
   (.swap a f args)) 
 
 (defn reset!!
   "Sets the value of exoatom to newval without regard for the
    current value. Returns newval."
-  [^exoref.atom.IExoAtom a val]
+  [^exoref.atom.IExoatom a val]
   (.reset a val))
 
 (defn close-listener!!
   "Closes the listener for the exoatom. Note that this will render the
    listener unusable for subsequent calls."
-  [^exoref.atom.IExoAtom a]
+  [^exoref.atom.IExoatom a]
   (.closeListener a))
 
