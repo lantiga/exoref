@@ -10,7 +10,9 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
-   [exoref "0.1.0"]
+```clojure
+[exoref "0.1.0"]
+```
    
 ## Usage
 
