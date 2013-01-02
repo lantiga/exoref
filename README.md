@@ -33,6 +33,8 @@ To instantiate an Exoatom, just make sure you have a redis server running and go
   (:use [exoref.atom :only [exoatom swap!! reset!! compare-and-set!!]]))
 
 (def eatom (exoatom "some:redis:key" {:a 1 :b "hey"}))
+
+@eatom
 ```
 
 A Redis key has to be provided, in order to allow other components of the distributed system (or different workers running the same code on different machines) to access the Exoatom value.
