@@ -157,9 +157,7 @@
    :conn-pool carmine-conn-pool
    :conn-spec carmine-conn-spec
    :meta metadata-map
-   :validator validate-fn
-   Note that in case conn-pool is not provided, non-pooled connections
-   will be employed, which will impact performance."
+   :validator validate-fn"
   [key val & options]
   (let [opt-map (apply hash-map options)
         conn-pool (or (:conn-pool opt-map) (car/make-conn-pool))
