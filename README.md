@@ -11,16 +11,16 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
 ```clojure
-[exoref "0.1.0"]
+[exoref "0.1.1"]
 ```
    
 ## Usage
 
 This is work in progress. 
 
-As of 0.1.0, Exoref provides a full-featured Clojure Atom implementation. 
+As of 0.1.1, Exoref provides Redis-based Atoms and Promises.
 
-Promises are around the corner. Other reference types will come with time.
+Other reference types will come with time.
 
 ### Exoatom
 
@@ -71,6 +71,31 @@ To change the value of the Exoatom use double-bang (as in [Avout](https://github
 
 (compare-and-set!! eatom {:c "foo"} {:c "bar"})
 ```
+
+### Exopromise
+
+An Exopromise is a Redis-based implementation of Clojure promises. To create a promise, go:
+
+```clojure
+(ns hello-world
+  (:use [exoref.promise :only [exopromise]]))
+
+(def epromise (exopromise "some:redis:key"))
+
+@eatom
+```
+
+You can then dereference and deliver the exopromise as usual
+
+```clojure
+(realized? epromise) 
+;; false
+(deliver epromise {:a 1})
+@epromise
+;; {:a 1}
+```
+
+Dereferencing is blocking, as for standard promises. If two processes share a promise, dereferencing in one process and delivering in the other process will unblock in both.
 
 ## Acknowledgements
 
