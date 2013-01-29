@@ -1,4 +1,4 @@
-(defproject exoref "0.1.1"
+(defproject exoref "0.1.2-SNAPSHOT"
   :description "Clojure Redis-based reference types."
   :url "https://github.com/lantiga/exoref"
   :license {:name "Eclipse Public License"
