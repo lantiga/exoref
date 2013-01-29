@@ -1,8 +1,8 @@
 (ns exoref.delay
   "A delay implementation based on Redis."
   {:author "Luca Antiga"}
-  (:use exoref.promise
-        exoref.atom))
+  (:refer-clojure :exclude [force])
+  (:use exoref.atom))
 
 (defprotocol IForce
   (force [this]))

@@ -1,4 +1,5 @@
 (ns exoref.delay-test
+  (:refer-clojure :exclude [force])
   (:use clojure.test
         exoref.delay))
 
