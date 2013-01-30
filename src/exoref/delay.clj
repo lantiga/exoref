@@ -9,6 +9,8 @@
 
 ;; TODO: check that bodies on different exodelays are nil or equivalent.
 
+;; TODO: consider using proxy to get rid of IForce and reuse clojure.core/force
+
 (defn exodelay-call
   "Takes a Redis key and a body of expressions and yields an exodelay object that will
   invoke the body only the first time it is forced (with force or deref/@), and

@@ -11,20 +11,22 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
 ```clojure
-[exoref "0.1.1"]
+[exoref "0.1.2"]
 ```
    
 ## Usage
 
 This is work in progress. 
 
-As of 0.1.1, Exoref provides Redis-based Atoms and Promises.
-
-Other reference types will come with time.
+As of 0.1.2, Exoref provides Redis-based counterparts of 
+    
+* Atom
+* Promise
+* Delay
 
 ### Exoatom
 
-An Exoatom provides a complete Redis-based implementation of Clojure atoms, including meta, validator and watches.
+An Exoatom provides a complete Redis-based implementation of a Clojure atom, including meta, validator and watches.
 
 To instantiate an Exoatom, just make sure you have a redis server running and go:
 
@@ -74,7 +76,7 @@ To change the value of the Exoatom use double-bang (as in [Avout](https://github
 
 ### Exopromise
 
-An Exopromise is a Redis-based implementation of Clojure promises. To create a promise, go:
+An Exopromise is a Redis-based implementation of a Clojure promise. To create a promise, go:
 
 ```clojure
 (ns hello-world
@@ -95,7 +97,44 @@ You can then dereference and deliver the exopromise as usual
 ;; {:a 1}
 ```
 
-Dereferencing is blocking, as for standard promises. If two processes share a promise, dereferencing in one process and delivering in the other process will unblock in both.
+Dereferencing is blocking, as for standard promises. If two processes share a promise (i.e. two exopromises are created with the same Redis key), dereferencing in one process and delivering in the other process will unblock in both.
+
+### Exodelay
+
+An Exodelay is a Redis-based implementation of a Clojure delay. An exodelay can be created in separate processes with a Redis key and a body of code, or with the key alone. As soon as one of the exodelays sharing the same Redis key is dereferenced, the body is executed in one (and only one) of the processes in which the exodelay has been created with a body. All calls to `deref` will block until the body has been executed, at which point the value is cached for subsequent calls in any process.
+
+To create a delay, go:
+
+```clojure
+(ns hello-world-1
+  (:user [exoref.delay :only [exodelay]))
+
+(def edelay-1 (exodelay "some:redis:key"))
+```
+
+and in another process
+
+```clojure
+(ns hello-world-2
+  (:user [exoref.delay :only [exodelay]))
+
+(def edelay-2 (exodelay "some:redis:key" (+ 1 2))
+```
+
+If the delay is deref'd in the first process
+```clojure
+@edelay-1
+```
+
+the body `(+ 1 2)` will be triggered in the second process and the deref in the first process will block until the body is done. At this point, both `@edelay-1` and `@edelay-2` will return `3`.
+
+## Limitations
+
+Right now exoref relies on raw Redis PubSub, which is [Fire and Forget](http://stackoverflow.com/questions/7662896/does-the-redis-pub-sub-model-require-persistent-connections-to-redis). This means that if the connection is lost temporarily, an exoref might not be notified of a change to the value of a ref. This affects atom watches, promise and delay. In particular, for the latter two, a deref might block indefinitely.
+
+There are several ways to solve this issue on the exoref side, e.g. relying on notification queues + client registration, possibly managed through a server-side Lua script. There are of course right [tools](http://www.zeromq.org/) [for](http://activemq.apache.org/amq-message-store.html) [the](http://www.rabbitmq.com/) [job](http://clojurerabbitmq.info/), but we'll try to stick with Redis for the proof of concept and see how far it takes us.
+
+It also looks like reliable PubSub might be a feature scheduled for future Redis releases (see [Redis docs](http://redis.io/topics/notifications) and a [couple](https://twitter.com/redisfeed/status/295854377216921600) [of](https://twitter.com/redisfeed/status/295854484339453952) tweets).
 
 ## Acknowledgements
 
@@ -103,7 +142,7 @@ Many thanks to @ptaoussanis (Peter Taoussanis) for clarifications on the use of 
 
 ## Contact
 
-For questions please contact me at (Luca Antiga) at [orobix.com](http://www.orobix.com). Pull requests are greatly welcome.
+For questions please contact me at luca dot antiga at [orobix](http://www.orobix.com) dot com. Pull requests are greatly welcome.
 
 ## License
 
