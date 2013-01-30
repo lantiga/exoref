@@ -11,18 +11,18 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
 ```clojure
-[exoref "0.1.2"]
+[exoref "0.1.3"]
 ```
    
 ## Usage
 
 This is work in progress. 
 
-As of 0.1.2, Exoref provides Redis-based counterparts of 
+As of 0.1.3, Exoref provides Redis-based counterparts of 
     
-* Atom (version 0.1.0)
-* Promise (version 0.1.1)
-* Delay (version 0.1.2)
+* Atom (since version 0.1.0)
+* Promise (since version 0.1.1)
+* Delay (since version 0.1.2)
 
 ### Exoatom
 
