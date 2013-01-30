@@ -20,9 +20,9 @@ This is work in progress.
 
 As of 0.1.2, Exoref provides Redis-based counterparts of 
     
-* Atom
-* Promise
-* Delay
+* Atom (version 0.1.0)
+* Promise (version 0.1.1)
+* Delay (version 0.1.2)
 
 ### Exoatom
 
@@ -32,7 +32,8 @@ To instantiate an Exoatom, just make sure you have a redis server running and go
 
 ```clojure
 (ns hello-world
-  (:use [exoref.atom :only [exoatom swap!! reset!! compare-and-set!!]]))
+  (:use [exoref.connection :only [with-conn make-conn-pool make-conn-spec]]
+        [exoref.atom :only [exoatom swap!! reset!! compare-and-set!!]]))
 
 (def eatom (exoatom "some:redis:key" {:a 1 :b "hey"}))
 
@@ -41,12 +42,15 @@ To instantiate an Exoatom, just make sure you have a redis server running and go
 
 A Redis key has to be provided, in order to allow other components of the distributed system (or different workers running the same code on different machines) to access the Exoatom value.
 
-To connect to a remote Redis server, provide a connection spec map (as in [Carmine](https://github.com/ptaoussanis/carmine)):
+To connect to a remote Redis server, use the `with-conn` macro in `exoref.connection` (for more details refer to [Carmine](https://github.com/ptaoussanis/carmine)):
 ```clojure
-(def conn-spec {host "redis://redishost.com" port 6379 password "changeme" timeout 0 db 0}
+(def conn-pool (make-conn-pool))
+(def conn-spec (make-conn-spec :host "redis://redishost.com" :port 6379 :password "changeme"))
 
-(def eatom (exoatom "some:redis:key" {:a 1 :b "hey"} :conn-spec conn-spec))
+(def eatom (with-conn conn-pool conn-spec (exoatom "some:redis:key" {:a 1 :b "hey"})))
 ```
+
+The `with-conn` macro can be used with all exoref reference types.
 
 Meta and validators are supported as in standard Clojure Atoms:
 ```clojure

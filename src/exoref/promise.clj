@@ -8,17 +8,17 @@
   once only, with deliver. Calls to deref/@ prior to delivery will
   block. All subsequent derefs will return the same delivered value
   without blocking. See also - realized?."
-  [key & options]
+  [key]
   (let [d (java.util.concurrent.CountDownLatch. 1)
         w (promise)
         unrealized-val :__unrealized__
-        v (apply exoatom key unrealized-val options)]
-    (add-watch v "promise-watch" 
-               (fn [_ _ _ n] 
+        v (exoatom key unrealized-val)]
+    (add-watch v "promise-watch"
+               (fn [_ _ _ n]
                  (when (not= n unrealized-val)
-                   (.countDown d) 
+                   (.countDown d)
                    (deliver w 1))))
-    (reify 
+    (reify
       clojure.lang.IDeref
       (deref [_] (.await d) @v)
       clojure.lang.IBlockingDeref
@@ -31,7 +31,7 @@
       (isRealized [this]
         (zero? (.getCount d)))
       clojure.lang.IFn
-      (invoke 
+      (invoke
         [this x]
         (when (and (pos? (.getCount d))
                    (compare-and-set!! v unrealized-val x))

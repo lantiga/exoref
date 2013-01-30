@@ -1,26 +1,8 @@
 (ns exoref.atom
   "A complete atom implementation based on Redis."
   {:author "Luca Antiga"}
-  (:require [taoensso.carmine :as car]
-            [taoensso.nippy :as nippy]))
-
-(defmacro wcar
-  "Evaluates body in the context of a Redis connection
-   with provided connection pool and spec. Returns the
-   server response."
-  [conn-pool conn-spec & body] 
-  `(car/with-conn ~conn-pool ~conn-spec
-     ~@body))
-
-(defmacro wcar*
-  "Evaluates body in the context of a Redis connection
-   with provided connection pool and spec. Returns the
-   evaluation of body."
-  [conn-pool conn-spec & body] 
-  `(with-local-vars [ret# nil]
-     (car/with-conn ~conn-pool ~conn-spec
-       (var-set ret# (do ~@body)))
-     (var-get ret#)))
+  (:use exoref.connection)
+  (:require [taoensso.carmine :as car]))
 
 (defprotocol IExoatom
   (compareAndSet [this o n])
@@ -44,7 +26,7 @@
 
 (defn uuid
   "Returns a random UUID using java.util.UUID."
-  [] 
+  []
   (str (java.util.UUID/randomUUID)))
 
 (defn ^:private make-proxy
@@ -56,9 +38,9 @@
    atom based on Redis. Meta, validator and watches are defined on a per-process
    (i.e. are not serialized to Redis and shared by all processes using the Exoatom)."
   [key conn-pool conn-spec listener]
-  
+
   (proxy [clojure.lang.ARef exoref.atom.IExoatom] []
-    
+
     (deref []
       "Returns the value stored at key on the Redis server."
       (wcar conn-pool conn-spec (car/get key)))
@@ -80,9 +62,9 @@
                      payload (str old-uuid " " new-uuid)]
                  (car/with-replies
                    (car/multi)
-                   (car/set key (car/preserve newval)) 
-                   (car/setex old-uuid expiration-secs (car/preserve oldval)) 
-                   (car/setex new-uuid expiration-secs (car/preserve newval)) 
+                   (car/set key (car/preserve newval))
+                   (car/setex old-uuid expiration-secs (car/preserve oldval))
+                   (car/setex new-uuid expiration-secs (car/preserve newval))
                    (car/publish key payload)
                    (car/exec))
                  true)
@@ -96,7 +78,7 @@
              (loop []
                (car/with-reply (car/watch key))
                (let [oldval (car/with-reply (car/get key))
-                     newval 
+                     newval
                      (try
                        (let [newval (if args (apply f oldval args) (f oldval))]
                          (validate this newval)
@@ -108,19 +90,19 @@
                      new-uuid (uuid)
                      expiration-secs 60
                      payload (str old-uuid " " new-uuid)
-                     ret (car/with-replies 
-                           (car/multi) 
-                           (car/set key (car/preserve newval)) 
-                           (car/setex old-uuid expiration-secs (car/preserve oldval)) 
-                           (car/setex new-uuid expiration-secs (car/preserve newval)) 
-                           (car/publish key payload) 
+                     ret (car/with-replies
+                           (car/multi)
+                           (car/set key (car/preserve newval))
+                           (car/setex old-uuid expiration-secs (car/preserve oldval))
+                           (car/setex new-uuid expiration-secs (car/preserve newval))
+                           (car/publish key payload)
                            (car/exec))]
                  (if-not (empty? (last ret))  newval (recur))))))
-    
+
     (reset [val]
       "Atomically set the value at key to newval. Returns newval."
       (swap this (constantly val) nil))
-    
+
     (triggerWatches [payload]
       "Callback function for invoking watches."
       (let [watches (.getWatches ^clojure.lang.ARef this)]
@@ -130,9 +112,9 @@
                        [oldval newval] (car/with-replies (car/get old-uuid) (car/get new-uuid))]
                    (doseq [[k watch] watches]
                      (watch k this oldval newval)))))))
-    
+
     (closeListener []
-      "Closes the Redis listener. Note that this will render the listener 
+      "Closes the Redis listener. Note that this will render the listener
        unusable for subsequent calls."
       (car/close-listener listener))))
 
@@ -144,7 +126,7 @@
   (let [listener (car/with-new-pubsub-listener conn-spec {})
         ^exoref.atom.IExoatom a (make-proxy key conn-pool conn-spec listener)]
     (.reset a val)
-    (swap! (:state listener) assoc key 
+    (swap! (:state listener) assoc key
            (fn [msg]
              (when (= "message" (first msg))
                (.triggerWatches a (last msg)))))
@@ -152,21 +134,23 @@
     a))
 
 (defn exoatom
-  "Create and returns an instance of Exoatom with a Redis key of key, 
+  "Create and returns an instance of Exoatom with a Redis key of key,
    an initial value of val and zero or more options (in any order):
    :conn-pool carmine-conn-pool
    :conn-spec carmine-conn-spec
    :meta metadata-map
    :validator validate-fn"
   [key val & options]
-  (let [opt-map (apply hash-map options)
-        conn-pool (or (:conn-pool opt-map) (car/make-conn-pool))
-        conn-spec (or (:conn-spec opt-map) (car/make-conn-spec))
+  (let [conn-pool (or *conn-pool* (car/make-conn-pool))
+        conn-spec (or *conn-spec* (car/make-conn-spec))
+        ;; opt-map (apply hash-map options)
+        ;;conn-pool (or (:conn-pool opt-map) (car/make-conn-pool))
+        ;;conn-spec (or (:conn-spec opt-map) (car/make-conn-spec))
         a (make-exoatom key val conn-pool conn-spec)
         setup-reference (ns-resolve 'clojure.core 'setup-reference)]
     (setup-reference a options)))
 
-(defn compare-and-set!! 
+(defn compare-and-set!!
   "Atomically sets the value of exoatom to newval if and only if the
    current value of the exoatom is identical to oldval. Returns true if
    set happened, else false"
@@ -179,7 +163,7 @@
    multiple times, and thus should be free of side effects.  Returns
    the value that was swapped in."
   [^exoref.atom.IExoatom a f & args]
-  (.swap a f args)) 
+  (.swap a f args))
 
 (defn reset!!
   "Sets the value of exoatom to newval without regard for the
@@ -192,4 +176,3 @@
    listener unusable for subsequent calls."
   [^exoref.atom.IExoatom a]
   (.closeListener a))
-
