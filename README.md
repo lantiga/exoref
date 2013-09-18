@@ -140,6 +140,11 @@ There are several ways to solve this issue on the exoref side, e.g. relying on n
 
 It also looks like reliable PubSub might be a feature scheduled for future Redis releases (see [Redis docs](http://redis.io/topics/notifications) and a [couple](https://twitter.com/redisfeed/status/295854377216921600) [of](https://twitter.com/redisfeed/status/295854484339453952) tweets).
 
+
+## Install to local repo
+
+lein localrepo install target/exoref-0.1.4-SNAPSHOT.jar exoref/exoref 0.1.4-SNAPSHOT
+
 ## Acknowledgements
 
 Many thanks to @ptaoussanis (Peter Taoussanis) for clarifications on the use of [Carmine](https://github.com/ptaoussanis/carmine).
