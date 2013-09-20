@@ -88,7 +88,7 @@ An Exopromise is a Redis-based implementation of a Clojure promise. To create a 
 
 (def epromise (exopromise "some:redis:key"))
 
-@eatom
+@epromise
 ```
 
 You can then dereference and deliver the exopromise as usual
