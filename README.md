@@ -143,7 +143,7 @@ It also looks like reliable PubSub might be a feature scheduled for future Redis
 
 ## Install to local repo
 
-lein localrepo install target/exoref-0.1.4-SNAPSHOT.jar exoref/exoref 0.1.4-SNAPSHOT
+    lein localrepo install target/exoref-0.1.4-SNAPSHOT.jar exoref/exoref 0.1.4-SNAPSHOT
 
 ## Acknowledgements
 
