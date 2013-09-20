@@ -11,14 +11,14 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
 ```clojure
-[exoref "0.1.4-SNAPSHOT"]
+[exoref "0.1.4"]
 ```
    
 ## Usage
 
 This is work in progress. 
 
-As of 0.1.3, Exoref provides Redis-based counterparts of 
+As of 0.1.3+, Exoref provides Redis-based counterparts of 
     
 * Atom (since version 0.1.0)
 * Promise (since version 0.1.1)
@@ -143,7 +143,11 @@ It also looks like reliable PubSub might be a feature scheduled for future Redis
 
 ## Install to local repo
 
-    lein localrepo install target/exoref-0.1.4-SNAPSHOT.jar exoref/exoref 0.1.4-SNAPSHOT
+Install [lein-localrepo](https://github.com/kumarshantanu/lein-localrepo) and run 
+
+    lein localrepo install target/exoref-0.1.x-SNAPSHOT.jar exoref/exoref 0.1.x-SNAPSHOT
+
+after replacing `0.1.x` with the actual version number.
 
 ## Acknowledgements
 
