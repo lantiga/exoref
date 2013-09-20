@@ -11,7 +11,7 @@ Exoref is based on [Carmine](https://github.com/ptaoussanis/carmine) Redis clien
 To include Exoref in your project, simply add the following to your `project.clj` dependencies:
 
 ```clojure
-[exoref "0.1.3"]
+[exoref "0.1.4-SNAPSHOT"]
 ```
    
 ## Usage
@@ -139,6 +139,11 @@ Right now exoref relies on raw Redis PubSub, which is [Fire and Forget](http://s
 There are several ways to solve this issue on the exoref side, e.g. relying on notification queues + client registration, possibly managed through a server-side Lua script. There are of course right [tools](http://www.zeromq.org/) [for](http://activemq.apache.org/amq-message-store.html) [the](http://www.rabbitmq.com/) [job](http://clojurerabbitmq.info/), but we'll try to stick with Redis for the proof of concept and see how far it takes us.
 
 It also looks like reliable PubSub might be a feature scheduled for future Redis releases (see [Redis docs](http://redis.io/topics/notifications) and a [couple](https://twitter.com/redisfeed/status/295854377216921600) [of](https://twitter.com/redisfeed/status/295854484339453952) tweets).
+
+
+## Install to local repo
+
+lein localrepo install target/exoref-0.1.4-SNAPSHOT.jar exoref/exoref 0.1.4-SNAPSHOT
 
 ## Acknowledgements
 
