@@ -18,7 +18,7 @@ To include Exoref in your project, simply add the following to your `project.clj
 
 This is work in progress. 
 
-As of 0.1.3+, Exoref provides Redis-based counterparts of 
+As of 0.1.4, Exoref provides Redis-based counterparts of 
     
 * Atom (since version 0.1.0)
 * Promise (since version 0.1.1)
